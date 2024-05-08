@@ -1,0 +1,119 @@
+﻿@model dependency_injection_example.Models.guidServicesModel
+
+
+<h1>Dependency Injection Example</h1>
+
+<h2>Concepts:</h2>
+<ul>
+    <li><strong>Dependency:</strong> A class or object that another class relies on to function.</li>
+    <li><strong>Dependency Injection (DI):</strong> A technique where a class receives its dependencies through its constructor or other methods, rather than creating them itself.</li>
+</ul>
+
+<h2>Benefits of DI:</h2>
+<ul>
+    <li><strong>Loose coupling:</strong> Classes become less dependent on specific implementations of their dependencies. This makes them easier to test, maintain, and reuse.</li>
+    <li><strong>Testability:</strong> You can easily inject mock objects during testing to isolate specific functionalities.</li>
+    <li><strong>Flexibility:</strong> You can switch between different implementations of dependencies without modifying the main class.</li>
+</ul>
+
+<h2>Scopes in DI:</h2>
+<ul>
+    <li><strong>Transient:</strong> A new instance is created every time the dependency is requested.</li>
+    <li><strong>Scoped:</strong> A single instance is created per request or operation scope.</li>
+    <li><strong>Singleton:</strong> A single instance is created for the entire application's lifetime.</li>
+</ul>
+
+<h2>Example Breakdown:</h2>
+<ol>
+    <li>
+        <strong>Setting Up Interfaces:</strong>
+        <ul>
+            <li>Three interfaces are created: <code>IGuidSingleton</code>, <code>IGuidScoped</code>, and <code>IGuidTransient</code>. These interfaces define the <code>Value</code> method that the concrete class (<code>guidService</code>) will implement.</li>
+        </ul>
+    </li>
+    <li>
+        <strong>Implementing the <code>guidService</code> Class:</strong>
+        <ul>
+            <li>This class has a private <code>guid</code> variable that holds a unique identifier (GUID).</li>
+            <li>A public <code>Value</code> method returns the <code>guid</code> value.</li>
+        </ul>
+    </li>
+    <li>
+        <strong>Configuring Dependency Injection:</strong>
+        <ul>
+            <li>The <code>builder.Services</code> object is used to configure the DI container.</li>
+            <li>
+                Three lines of code register the <code>guidService</code> class with different scopes:
+                <ul>
+                    <li><code>AddSingleton</code>: Creates a single instance for <code>IGuidSingleton</code>.</li>
+                    <li><code>AddScoped</code>: Creates an instance per request for <code>IGuidScoped</code>.</li>
+                    <li><code>AddTransient</code>: Creates a new instance each time <code>IGuidTransient</code> is requested.</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <strong>Injections in the Controller:</strong>
+        <ul>
+        <li>The controller class has five private member variables:
+            <ul>
+                    <li><code>_guidSingleton</code>: Injected with <code>IGuidSingleton</code>.</li>
+                    <li><code>_guidScoped1</code>: Injected with <code>IGuidScoped</code>.</li>
+                    <li><code>_guidScoped2</code>: Injected with <code>IGuidScoped</code>.</li>
+                    <li><code>_guidTransient1</code>: Injected with <code>IGuidTransient</code>.</li>
+                    <li><code>_guidTransient2</code>: Injected with <code>IGuidTransient</code>.</li>
+                </ul>
+            </li>
+            <li>The DI framework automatically injects instances of the corresponding services into these variables based on their types.</li>
+        </ul>
+    </li>
+    <li>
+        <strong>Calling the <code>Value</code> Method:</strong>
+        <ul>
+            <li>The controller code calls the <code>Value</code> method on each injected object to retrieve and display the GUID values.</li>
+        </ul>
+    </li>
+</ol>
+
+<h2>Expected Behavior:</h2>
+<ul>
+    <li>The <code>div</code> element in the Demo below refreshes every 5 seconds, showing the retrieved GUID values.</li>
+    <li><strong>Transient:</strong> <code>Transient 1</code> and <code>Transient 2</code> will always display different values because a new instance is created each time.</li>
+    <li><strong>Scoped:</strong> <code>Scoped 1</code> and <code>Scoped 2</code> will show the same value within a refresh cycle, but might change across cycles due to a new instance being created for each request.</li>
+    <li><strong>Singleton:</strong> <code>Singleton</code> will always display the same value throughout the application's lifetime unless it's restarted.</li>
+</ul>
+
+<h2>Key Takeaways:</h2>
+<ul>
+    <li>DI helps manage object lifecycles and dependencies.</li>
+    <li>Choosing the appropriate scope depends on how long a specific object needs to exist and be shared.</li>
+    <li>DI promotes better code organization, testability, and maintainability.</li>
+</ul>
+
+<h2>Demo:</h2><br />
+
+<div id="guid-dependency-injection"></div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+            function refreshPartialView() {
+                $.ajax({
+                    url: '@Url.Action("GetGuidPartialView", "Home")',
+                cache: false, // Prevent caching for dynamic updates
+                success: function (data) {
+                        $('#guid-dependency-injection').html(data);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error("Error refreshing partial view:", textStatus, errorThrown);
+                    // Handle errors gracefully, e.g., display an error message
+                }
+            });
+        }
+
+        refreshPartialView(); // Call initially
+        setInterval(refreshPartialView, 5000); // Refresh every 5 seconds (adjust as needed)
+    });
+    </script>
+}
